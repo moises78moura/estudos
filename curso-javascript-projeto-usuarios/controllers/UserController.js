@@ -10,8 +10,8 @@ class UserController{
         this.formE1.addEventListener("submit", event => {
             event.preventDefault();//Cancela o comportamento padrão de um evento(no caso o submit)
            
-           let btn = this.formE1.querySelector('[type=submit]');
-           btn.disabled = true;
+            let btn = this.formE1.querySelector('[type=submit]');
+            btn.disabled = true;
             let values = this.getValues();
             values.photo = "";
 
@@ -111,7 +111,7 @@ class UserController{
         <td>${dataUser.name}</td>
         <td>${dataUser.email}</td>
         <td>${(dataUser.admin)  ? 'Sim' : 'Não'}</td>
-        <td>${dataUser.birth}</td>
+        <td>${(dataUser.register)}</td>
         <td>
         <button type="button" class="btn btn-primary btn-xs btn-flat">Editar</button>
         <button type="button" class="btn btn-danger btn-xs btn-flat">Excluir</button>
