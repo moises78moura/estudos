@@ -1,0 +1,5 @@
+/**
+ * 
+ */
+
+window.calculator = new CalculatorController();
