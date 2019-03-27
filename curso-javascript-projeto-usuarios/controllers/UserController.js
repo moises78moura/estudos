@@ -80,8 +80,17 @@ class UserController{
 
     getValues(){
         let user = {};
+        let isValid = true;
         //A partir do ES2015, foi introduzido o operador Spread (essa reticencias)
        [...this.formE1.elements].forEach(function(field, index){
+
+        if(['name', 'email', 'password'].indexOf(field.name) > -1 && !field.value){
+            
+            field.parentElement.classList.add('has-error');
+            console.dir(field);
+            isValid = false;
+        }
+
      //   Array.from(this.formE1.elements).forEach(function(field, index){
  //       this.formE1.elements.forEach(function(field, index){
         //  console.log("index", index);
@@ -95,6 +104,9 @@ class UserController{
                 user[field.name] = field.value;
             }
         });
+        if(!isValid){
+            false;
+        }
         return new User(user.name, user.gender, user.birth, user.country, user.email, user.password, user.photo, user.admin);
     }
 
@@ -111,7 +123,7 @@ class UserController{
         <td>${dataUser.name}</td>
         <td>${dataUser.email}</td>
         <td>${(dataUser.admin)  ? 'Sim' : 'Não'}</td>
-        <td>${(dataUser.register)}</td>
+        <td>${Utils.dateFormat((dataUser.register))}</td>
         <td>
         <button type="button" class="btn btn-primary btn-xs btn-flat">Editar</button>
         <button type="button" class="btn btn-danger btn-xs btn-flat">Excluir</button>
