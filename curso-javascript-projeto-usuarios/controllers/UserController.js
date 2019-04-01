@@ -13,6 +13,9 @@ class UserController{
             let btn = this.formE1.querySelector('[type=submit]');
             btn.disabled = true;
             let values = this.getValues();
+            if(!values){
+                return false;
+            }
             values.photo = "";
 
             this.getPhoto().then(
@@ -105,7 +108,7 @@ class UserController{
             }
         });
         if(!isValid){
-            false;
+            return false;
         }
         return new User(user.name, user.gender, user.birth, user.country, user.email, user.password, user.photo, user.admin);
     }
@@ -114,7 +117,7 @@ class UserController{
         console.log("dataUser", dataUser);
 
         let tr = document.createElement('tr');
-
+        tr.dataset.user = JSON.stringify(dataUser);
         tr.innerHTML = `
         <tr>
         <td>
@@ -131,6 +134,29 @@ class UserController{
         </tr>
         `;
         this.tableE1.appendChild(tr);
+
+        this.updateCount();
     }
 
+    updateCount(){
+        console.dir(this.tableE1.children);
+
+        let numberUser = 0;
+        let numberAdmin = 0;
+
+        [...this.tableE1.children].forEach(tr=>{
+            numberUser++;
+            let user = JSON.parse(tr.dataset.user );
+            if(user._admin){
+                numberAdmin++;
+            }
+            console.log("dataset", JSON.parse(tr.dataset.user ));
+        });
+        console.log("numberUser", numberUser);
+        console.log("numberAdmin", numberAdmin);
+        document.querySelector("number-users").innerHTML = numberUser;
+        document.querySelector("number-users-admin").innerHTML = numberAdmin;
+        
+
+    }
 }
