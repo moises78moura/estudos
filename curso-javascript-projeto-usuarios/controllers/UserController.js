@@ -114,7 +114,6 @@ class UserController{
     }
 
     addLine(dataUser){
-        console.log("dataUser", dataUser);
 
         let tr = document.createElement('tr');
         tr.dataset.user = JSON.stringify(dataUser);
