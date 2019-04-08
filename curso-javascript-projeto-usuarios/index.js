@@ -1,4 +1,4 @@
-let userController = new UserController("form-user-create","table-user");
+let userController = new UserController("form-user-create","form-user-update","table-user");
 //userController.onSubmit();
             
            
