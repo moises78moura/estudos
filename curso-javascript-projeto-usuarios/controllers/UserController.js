@@ -1,26 +1,62 @@
 class UserController{
 
-    constructor(formId, tableId){
-        this.formE1 = document.getElementById(formId);
+    constructor(formIdCreate,formIdUpdate, tableId){
+        this.formEl = document.getElementById(formIdCreate);
+        this.formUpdateE1 = document.getElementById(formIdUpdate);
         this.tableE1 = document.getElementById(tableId);
+
         this.onSubmit();
-        this.onEditCancel();
+        this.onEdit();
     }
 
-    onEditCancel(){
+
+
+
+    onEdit(){
         document.querySelector("#box-user-update .btn-cancel").addEventListener("click", e=>{
             this.showPanelCreate();
+        });
+
+        this.formUpdateE1.addEventListener("submit", event=>{
+            event.preventDefault();
+            let btn = this.formUpdateE1.querySelector("[type=submit]");
+            btn.disabled = true;
+            let values = this.getValues(this.formUpdateE1);
+            console.log(" formUpdateE1 ", values);
+
+            let index = this.formUpdateE1.dataset.trIndex;
+            let tr = this.tableE1.rows[index];
+            tr.dataset.user = JSON.stringify(values);
+
+            tr.innerHTML = `
+            <tr>
+            <td>
+            <img src="${values.photo}" alt="User Image" class="img-circle img-sm">
+            </td>
+            <td>${values.name}</td>
+            <td>${values.email}</td>
+            <td>${(values.admin)  ? 'Sim' : 'Não'}</td>
+            <td>${Utils.dateFormat((values.register))}</td>
+            <td>
+            <button type="button" class="btn btn-primary btn-edit btn-xs btn-flat">Editar</button>
+            <button type="button" class="btn btn-danger btn-xs btn-flat">Excluir</button>
+            </td>
+            </tr>
+            `;
+            this.addEventsTr(tr);
+            this.updateCount();
+
         });
     }
 
 
     onSubmit(){
-        this.formE1.addEventListener("submit", event => {
+        this.formEl.addEventListener("submit", event => {
             event.preventDefault();//Cancela o comportamento padrão de um evento(no caso o submit)
            
-            let btn = this.formE1.querySelector('[type=submit]');
+            let btn = this.formEl.querySelector('[type=submit]');
             btn.disabled = true;
-            let values = this.getValues();
+            let values = this.getValues(this.formEl);
             if(!values){
                 return false;
             }
@@ -30,7 +66,7 @@ class UserController{
                 (content) => {//Arrow function, é o mesmo que colocar o function(content)
                     values.photo = content;
                     this.addLine(values);
-                    this.formE1.reset();
+                    this.formEl.reset();
                     btn.disabled = false;
             }, 
             (e) =>{
@@ -50,7 +86,7 @@ class UserController{
         return new Promise((resolve, reject) => {//Arrow function
             
             let fileReader = new FileReader();
-            let elements = [...this.formE1.elements].filter(item => {
+            let elements = [...this.formEl.elements].filter(item => {
                 if(item.name === 'photo'){
                     return item;
                 }
@@ -75,7 +111,7 @@ class UserController{
     }
     // getPhoto(callback){
     //     let fileReader = new FileReader();
-    //     let elements = [...this.formE1.elements].filter(item => {
+    //     let elements = [...this.formEl.elements].filter(item => {
     //         if(item.name === 'photo'){
     //             return item;
     //         }
@@ -89,11 +125,11 @@ class UserController{
     //     fileReader.readAsDataURL(file);
     // }
 
-    getValues(){
+    getValues(formEl){
         let user = {};
         let isValid = true;
         //A partir do ES2015, foi introduzido o operador Spread (essa reticencias)
-       [...this.formE1.elements].forEach(function(field, index){
+       [...formEl.elements].forEach(function(field, index){
 
         if(['name', 'email', 'password'].indexOf(field.name) > -1 && !field.value){
             
@@ -102,8 +138,8 @@ class UserController{
             isValid = false;
         }
 
-     //   Array.from(this.formE1.elements).forEach(function(field, index){
- //       this.formE1.elements.forEach(function(field, index){
+     //   Array.from(this.formEl.elements).forEach(function(field, index){
+ //       this.formEl.elements.forEach(function(field, index){
         //  console.log("index", index);
             if(field.name == "gender"){
                 if(field.checked){
@@ -141,18 +177,51 @@ class UserController{
         </tr>
         `;
 
+       this.addEventsTr(tr);
+       
+       this.tableE1.appendChild(tr);
+       
+       this.updateCount();
+    }
+    
+    addEventsTr(tr){
+
         tr.querySelector(".btn-edit").addEventListener("click", e=>{
             console.log("tr -> ", JSON.parse(tr.dataset.user));
+
+            let json = JSON.parse(tr.dataset.user);
+            let form = document.querySelector("#form-user-update");
+
+            form.dataset.trIndex = tr.sectionRowIndex;
+
+            for(let name in json){
+                let field = form.querySelector("[name=" + name.replace("_","")+"]");
+                
+                if(field){
+                    
+                    switch(field.type){
+                        case 'file':
+                            continue;
+                            break;
+                        case 'radio':
+                            field = form.querySelector("[name=" + name.replace("_","")+"][value="+json[name]+"]");
+                            field.checked = true;
+                            break;
+                        case 'checkbox':
+                            field.checked = json[name];
+                            break;
+                        default:
+                            field.value = json[name];
+                    }
+
+                }
+            }
+
             this.showPanelUpdate();
         //    document.querySelector("#box-user-create").style.display = "none";
         //   document.querySelector("#box-user-update").style.display = "block";
         });
-
-        this.tableE1.appendChild(tr);
-
-        this.updateCount();
     }
-
 
     showPanelCreate(){
         document.querySelector("#box-user-create").style.display = "block";
