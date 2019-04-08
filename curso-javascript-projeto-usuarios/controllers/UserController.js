@@ -4,7 +4,15 @@ class UserController{
         this.formE1 = document.getElementById(formId);
         this.tableE1 = document.getElementById(tableId);
         this.onSubmit();
+        this.onEditCancel();
     }
+
+    onEditCancel(){
+        document.querySelector("#box-user-update .btn-cancel").addEventListener("click", e=>{
+            this.showPanelCreate();
+        });
+    }
+
 
     onSubmit(){
         this.formE1.addEventListener("submit", event => {
@@ -127,34 +135,51 @@ class UserController{
         <td>${(dataUser.admin)  ? 'Sim' : 'Não'}</td>
         <td>${Utils.dateFormat((dataUser.register))}</td>
         <td>
-        <button type="button" class="btn btn-primary btn-xs btn-flat">Editar</button>
+        <button type="button" class="btn btn-primary btn-edit btn-xs btn-flat">Editar</button>
         <button type="button" class="btn btn-danger btn-xs btn-flat">Excluir</button>
         </td>
         </tr>
         `;
+
+        tr.querySelector(".btn-edit").addEventListener("click", e=>{
+            console.log("tr -> ", JSON.parse(tr.dataset.user));
+            this.showPanelUpdate();
+        //    document.querySelector("#box-user-create").style.display = "none";
+        //   document.querySelector("#box-user-update").style.display = "block";
+        });
+
         this.tableE1.appendChild(tr);
 
         this.updateCount();
     }
 
+
+    showPanelCreate(){
+        document.querySelector("#box-user-create").style.display = "block";
+        document.querySelector("#box-user-update").style.display = "none";
+
+    }
+    
+    showPanelUpdate(){
+        document.querySelector("#box-user-create").style.display = "none";
+        document.querySelector("#box-user-update").style.display = "block";
+
+    }
+
     updateCount(){
-        console.dir(this.tableE1.children);
 
         let numberUser = 0;
         let numberAdmin = 0;
 
         [...this.tableE1.children].forEach(tr=>{
             numberUser++;
-            let user = JSON.parse(tr.dataset.user );
+            let user = JSON.parse(tr.dataset.user);
             if(user._admin){
                 numberAdmin++;
             }
-            console.log("dataset", JSON.parse(tr.dataset.user ));
         });
-        console.log("numberUser", numberUser);
-        console.log("numberAdmin", numberAdmin);
-        document.querySelector("number-users").innerHTML = numberUser;
-        document.querySelector("number-users-admin").innerHTML = numberAdmin;
+        document.querySelector("#number-users").innerHTML = numberUser;
+        document.querySelector("#number-users-admin").innerHTML = numberAdmin;
         
 
     }
