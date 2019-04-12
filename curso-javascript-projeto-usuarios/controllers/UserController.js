@@ -7,6 +7,7 @@ class UserController{
 
         this.onSubmit();
         this.onEdit();
+        this.selectAll();
     }
 
 
@@ -47,22 +48,14 @@ class UserController{
                     }else{
                         result._photo = content;
                     }
-                    tr.dataset.user = JSON.stringify(result);// Transforma um objeto JSON em uma String
-                    
-                    tr.innerHTML = `
-                    <tr>
-                    <td><img src="${result._photo}" alt="User Image" class="img-circle img-sm"> </td>
-                    <td>${result._name}</td>
-                    <td>${result._email}</td>
-                    <td>${(result._admin)  ? 'Sim' : 'Não'}</td>
-                    <td>${Utils.dateFormat((result._register))}</td>
-                    <td>
-                    <button type="button" class="btn btn-primary btn-edit btn-xs btn-flat">Editar</button>
-                    <button type="button" class="btn btn-danger btn-xs btn-flat">Excluir</button>
-                    </td>
-                    </tr>
-                    `;
-                    this.addEventsTr(tr);
+                  //  tr.dataset.user = JSON.stringify(result);// Transforma um objeto JSON em uma String
+
+                    let user = new User();
+
+                    user.loadFromJSON(result);
+
+                    this.getTr(user, tr);
+                
                     this.updateCount();
 
                     this.formUpdateEl.reset();
@@ -93,6 +86,7 @@ class UserController{
             this.getPhoto(this.formEl).then(
                 (content) => {//Arrow function, é o mesmo que colocar o function(content)
                     values.photo = content;
+                    this.insert(values);
                     this.addLine(values);
                     this.formEl.reset();
                     btn.disabled = false;
@@ -159,16 +153,12 @@ class UserController{
         //A partir do ES2015, foi introduzido o operador Spread (essa reticencias)
        [...formEl.elements].forEach(function(field, index){
 
-        if(['name', 'email', 'password'].indexOf(field.name) > -1 && !field.value){
-            
-            field.parentElement.classList.add('has-error');
-            console.dir(field);
-            isValid = false;
-        }
-
-     //   Array.from(this.formEl.elements).forEach(function(field, index){
- //       this.formEl.elements.forEach(function(field, index){
-        //  console.log("index", index);
+            if(['name', 'email', 'password'].indexOf(field.name) > -1 && !field.value){
+                
+                field.parentElement.classList.add('has-error');
+                console.dir(field);
+                isValid = false;
+            }
             if(field.name == "gender"){
                 if(field.checked){
                     user.gender = field.value;
@@ -185,9 +175,48 @@ class UserController{
         return new User(user.name, user.gender, user.birth, user.country, user.email, user.password, user.photo, user.admin);
     }
 
+    selectAll(){
+        let users = this.getUsersStorage();
+
+        users.forEach(dataUser=>{
+            let user = new User();
+            user.loadFromJSON(dataUser);
+            this.addLine(user);
+        });
+    }
+
+    insert(data){
+        
+        let users = this.getUsersStorage();
+        users.push(data);
+        localStorage.setItem("users",JSON.stringify(users));//para de chave e valor, param 1 = chave, param 2 = valor
+        //sessionStorage.setItem("users",JSON.stringify(users));//para de chave e valor, param 1 = chave, param 2 = valor
+    }
+
+    getUsersStorage(){
+
+        let users = [];
+
+        if(localStorage.getItem("users")){//Armazena no navegador
+        //if(sessionStorage.getItem("users")){//Armazena na sessão
+            users = JSON.parse(localStorage.getItem("users"));
+            //users = JSON.parse(sessionStorage.getItem("users"));
+        }
+        return users;
+    }
+
     addLine(dataUser){
 
-        let tr = document.createElement('tr');
+        let tr = this.getTr(dataUser);
+
+        this.tableE1.appendChild(tr);
+       
+        this.updateCount();
+    }
+
+    getTr(dataUser, tr = null){//'tr = null', significa que o parametro 'tr' não é obrigatorio
+      
+        if(tr === null) tr = document.createElement('tr');
         tr.dataset.user = JSON.stringify(dataUser);
         tr.innerHTML = `
         <tr>
@@ -200,19 +229,22 @@ class UserController{
         <td>${Utils.dateFormat((dataUser.register))}</td>
         <td>
         <button type="button" class="btn btn-primary btn-edit btn-xs btn-flat">Editar</button>
-        <button type="button" class="btn btn-danger btn-xs btn-flat">Excluir</button>
+        <button type="button" class="btn btn-danger btn-delete btn-xs btn-flat">Excluir</button>
         </td>
         </tr>
         `;
-
-       this.addEventsTr(tr);
-       
-       this.tableE1.appendChild(tr);
-       
-       this.updateCount();
+        this.addEventsTr(tr);
+        return tr;
     }
     
     addEventsTr(tr){
+
+        tr.querySelector(".btn-delete").addEventListener("click", e => {
+            if(confirm("Deseja realmente excluir?")){
+                tr.remove();
+                this.updateCount();
+            }
+        });
 
         tr.querySelector(".btn-edit").addEventListener("click", e=>{
             console.log("tr -> ", JSON.parse(tr.dataset.user));
