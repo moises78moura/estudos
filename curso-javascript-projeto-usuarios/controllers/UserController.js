@@ -53,7 +53,7 @@ class UserController{
                     let user = new User();
 
                     user.loadFromJSON(result);
-
+                    user.save();
                     this.getTr(user, tr);
                 
                     this.updateCount();
@@ -86,7 +86,9 @@ class UserController{
             this.getPhoto(this.formEl).then(
                 (content) => {//Arrow function, é o mesmo que colocar o function(content)
                     values.photo = content;
-                    this.insert(values);
+
+                    values.save();
+                    //this.insert(values);
                     this.addLine(values);
                     this.formEl.reset();
                     btn.disabled = false;
@@ -176,7 +178,7 @@ class UserController{
     }
 
     selectAll(){
-        let users = this.getUsersStorage();
+        let users = User.getUsersStorage();
 
         users.forEach(dataUser=>{
             let user = new User();
@@ -185,26 +187,15 @@ class UserController{
         });
     }
 
-    insert(data){
+    // insert(data){
         
-        let users = this.getUsersStorage();
-        users.push(data);
-        localStorage.setItem("users",JSON.stringify(users));//para de chave e valor, param 1 = chave, param 2 = valor
-        //sessionStorage.setItem("users",JSON.stringify(users));//para de chave e valor, param 1 = chave, param 2 = valor
-    }
+    //     let users = this.getUsersStorage();
+    //     users.push(data);
+    //     localStorage.setItem("users",JSON.stringify(users));//para de chave e valor, param 1 = chave, param 2 = valor
+    //     //sessionStorage.setItem("users",JSON.stringify(users));//para de chave e valor, param 1 = chave, param 2 = valor
+    // }
 
-    getUsersStorage(){
-
-        let users = [];
-
-        if(localStorage.getItem("users")){//Armazena no navegador
-        //if(sessionStorage.getItem("users")){//Armazena na sessão
-            users = JSON.parse(localStorage.getItem("users"));
-            //users = JSON.parse(sessionStorage.getItem("users"));
-        }
-        return users;
-    }
-
+  
     addLine(dataUser){
 
         let tr = this.getTr(dataUser);
@@ -241,6 +232,10 @@ class UserController{
 
         tr.querySelector(".btn-delete").addEventListener("click", e => {
             if(confirm("Deseja realmente excluir?")){
+
+                let user = new User();
+                user.loadFromJSON(JSON.parse(tr.dataset.user));
+                user.remove();
                 tr.remove();
                 this.updateCount();
             }
